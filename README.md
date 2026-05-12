@@ -4,10 +4,10 @@
 
 | Item | Description |
 |---|---|
-| Course |  |
-| Class |  |
+| Course | SWP391 |
+| Class | SE20A11 |
 | Semester | SU26 |
-| Group |  |
+| Group | 1 |
 | Topic |  |
 | Repository |  |
 
@@ -17,10 +17,10 @@
 
 | No | Student ID | Full Name | GitHub Username | Role | Main Responsibility |
 |---:|---|---|---|---|---|
-| 1 |  |  |  | Leader |  |
-| 2 |  |  |  | Member |  |
-| 3 |  |  |  | Member |  |
-| 4 |  |  |  | Member |  |
+| 1 | DE191019 | Phan Nguyễn |  | Leader |  |
+| 2 | DE190425 | Phạm Văn Quyết |  | Member |  |
+| 3 | DE190986 | Nguyễn Tiến Lộc |  | Member |  |
+| 4 | DE190096 | Nguyễn Đức Thương |  | Member |  |
 | 5 |  |  |  | Member |  |
 
 ---
