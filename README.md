@@ -18,10 +18,10 @@
 | No | Student ID | Full Name | GitHub Username | Role | Main Responsibility |
 |---:|---|---|---|---|---|
 | 1 | DE191019 | Phan Nguyễn | Nguyendeptraibodoi | Leader |  |
-| 2 | DE190425 | Phạm Văn Quyết |  | Member |  |
-| 3 | DE190986 | Nguyễn Tiến Lộc |  | Member |  |
+| 2 | DE190425 | Phạm Văn Quyết | quyetpham2k5 | Member |  |
+| 3 | DE190986 | Nguyễn Tiến Lộc | tienloc1234 | Member |  |
 | 4 | DE190096 | Nguyễn Đức Thương | thuong1703n | Member |  |
-| 5 |  |  |  | Member |  |
+| 5 | DE180571 | Trần Thanh Gia Huy |  | Member |  |
 
 ---
 
