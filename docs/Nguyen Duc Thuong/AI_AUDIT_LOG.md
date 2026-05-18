@@ -21,9 +21,9 @@
 
 Đánh dấu các công cụ AI đã sử dụng trong quá trình thực hiện bài tập/project.
 
-- [ x ] ChatGPT
+- [  ] ChatGPT
 - [ ] Gemini
-- [ x ] Claude
+- [  ] Claude
 - [ ] GitHub Copilot
 - [ ] Cursor
 - [ ] Antigravity
