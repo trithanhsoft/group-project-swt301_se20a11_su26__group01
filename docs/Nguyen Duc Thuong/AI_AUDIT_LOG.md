@@ -4,15 +4,15 @@
 
 | Thông tin | Nội dung |
 |---|---|
-| Môn học |  |
-| Mã môn học |  |
-| Lớp |  |
-| Học kỳ |  |
-| Tên bài tập / Project |  |
-| Tên sinh viên / Nhóm |  |
-| MSSV / Danh sách MSSV |  |
-| Giảng viên hướng dẫn |  |
-| Ngày bắt đầu |  |
+| Môn học | 	Software development project |
+| Mã môn học | SWP391 |
+| Lớp | SE20A11 |
+| Học kỳ | 5 |
+| Tên bài tập / Project | Office Maintenance Manage System |
+| Tên sinh viên / Nhóm | Nguyễn Đức Thương / 1 |
+| MSSV / Danh sách MSSV | DE190096 |
+| Giảng viên hướng dẫn | 	QuangLTN3 |
+| Ngày bắt đầu | 11/5/2026 |
 | Ngày hoàn thành |  |
 
 ---
@@ -21,9 +21,9 @@
 
 Đánh dấu các công cụ AI đã sử dụng trong quá trình thực hiện bài tập/project.
 
-- [ ] ChatGPT
+- [ x ] ChatGPT
 - [ ] Gemini
-- [ ] Claude
+- [ x ] Claude
 - [ ] GitHub Copilot
 - [ ] Cursor
 - [ ] Antigravity
