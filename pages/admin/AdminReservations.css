@@ -1,0 +1,105 @@
+.admin-reservations {}
+
+.res-admin-stats {
+  display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;
+}
+.res-stat-card {
+  background: white; border-radius: 10px; padding: 14px 18px;
+  text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  border-top: 3px solid #e85d04; min-width: 110px; cursor: pointer;
+  transition: all 0.2s;
+}
+.res-stat-card:hover { transform: translateY(-2px); }
+.res-stat-num   { display: block; font-size: 22px; font-weight: 800; }
+.res-stat-label { display: block; font-size: 11px; color: #718096; margin-top: 2px; }
+
+.res-toolbar { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.search-input {
+  width: 360px; padding: 10px 16px;
+  border: 1.5px solid #e2e8f0; border-radius: 8px;
+  font-size: 14px; background: white;
+}
+.search-input:focus { border-color: #e85d04; outline: none; }
+.filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-tab {
+  padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500;
+  background: white; color: #718096; border: 1px solid #e2e8f0; transition: all 0.2s;
+}
+.filter-tab:hover { border-color: #e85d04; color: #e85d04; }
+.filter-tab.active { background: #e85d04; color: white; border-color: #e85d04; }
+
+.res-admin-list { display: flex; flex-direction: column; gap: 10px; }
+
+.res-admin-card { padding: 0; overflow: hidden; }
+
+.res-admin-row {
+  display: flex; align-items: center; gap: 16px;
+  padding: 14px 20px; cursor: pointer; transition: background 0.2s;
+}
+.res-admin-row:hover { background: #fafafa; }
+
+.res-col-id   { display: flex; flex-direction: column; gap: 4px; min-width: 120px; }
+.res-col-guest { display: flex; flex-direction: column; gap: 3px; flex: 1; font-size: 13px; }
+.res-col-guest strong { font-size: 14px; }
+.res-col-time  { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: #4a5568; min-width: 120px; }
+.res-col-info  { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: #718096; min-width: 120px; }
+
+.res-admin-id { font-weight: 700; color: #e85d04; font-size: 13px; }
+
+.res-status-badge {
+  font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; display: inline-block;
+}
+.res-pending   { background: #fefcbf; color: #7b6000; }
+.res-confirmed { background: #e6f4ff; color: #1d6fa4; }
+.res-arrived   { background: #c6f6d5; color: #276749; }
+.res-cancelled { background: #fed7d7; color: #9b2c2c; }
+
+.preorder-tag { color: #e85d04; font-weight: 600; }
+.expand-arrow { color: #a0aec0; font-size: 12px; margin-left: auto; }
+
+/* Detail */
+.res-admin-detail {
+  border-top: 1px solid #f0f0f0; padding: 16px 20px; background: #fafafa;
+}
+.res-note {
+  font-size: 13px; color: #4a5568;
+  background: #fffbeb; border-left: 3px solid #d69e2e;
+  padding: 8px 12px; border-radius: 4px; margin-bottom: 14px;
+}
+
+.res-preorder-section { margin-bottom: 14px; }
+.res-preorder-section h4 { font-size: 13px; font-weight: 700; color: #4a5568; margin-bottom: 8px; }
+
+.preorder-item-row {
+  display: flex; justify-content: space-between;
+  font-size: 13px; color: #4a5568; padding: 5px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.preorder-total-row {
+  display: flex; justify-content: space-between;
+  font-size: 14px; padding-top: 8px; margin-top: 4px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Actions */
+.res-admin-actions { display: flex; flex-direction: column; gap: 8px; }
+.confirm-row { display: flex; gap: 10px; align-items: center; }
+
+.table-select {
+  padding: 8px 14px; border: 1.5px solid #e2e8f0;
+  border-radius: 8px; font-size: 13px; background: white; min-width: 160px;
+}
+
+.action-btn {
+  padding: 8px 18px; border-radius: 8px;
+  font-size: 13px; font-weight: 600; transition: all 0.2s;
+}
+.confirm-btn  { background: #38a169; color: white; }
+.confirm-btn:hover:not(:disabled) { background: #2f855a; }
+.confirm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.checkin-btn  { background: #3182ce; color: white; }
+.checkin-btn:hover { background: #2b6cb0; }
+.cancel-btn   { background: #fff5f5; color: #c53030; border: 1px solid #fed7d7; }
+.cancel-btn:hover { background: #fed7d7; }
+.undo-btn     { background: #f5f6fa; color: #718096; }
+.undo-btn:hover { background: #e2e8f0; }
