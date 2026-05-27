@@ -1,0 +1,65 @@
+.staff-layout { display: flex; min-height: 100vh; }
+
+.staff-sidebar {
+  width: 220px;
+  background: #1a1a2e;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  z-index: 100;
+}
+
+.staff-logo {
+  padding: 22px 20px;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.staff-nav { flex: 1; padding: 16px 0; display: flex; flex-direction: column; gap: 4px; }
+
+.staff-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  color: #a0aec0;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.staff-nav-item:hover { background: rgba(255,255,255,0.06); color: white; }
+.staff-nav-item.active { background: #e85d04; color: white; }
+
+.staff-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.staff-user { display: flex; align-items: center; gap: 10px; }
+
+.staff-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: #e85d04;
+  color: white;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.staff-name { color: white; font-size: 13px; font-weight: 600; }
+.staff-role-label { color: #a0aec0; font-size: 11px; }
+
+.staff-logout { background: none; font-size: 18px; color: #a0aec0; }
+.staff-logout:hover { color: white; }
+
+.staff-main { margin-left: 220px; flex: 1; padding: 24px; background: #f5f6fa; min-height: 100vh; }

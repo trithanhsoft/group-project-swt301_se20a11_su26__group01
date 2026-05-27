@@ -1,0 +1,105 @@
+.customer-layout { min-height: 100vh; background: #f5f6fa; }
+
+.customer-header {
+  background: white;
+  height: 64px;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.customer-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  cursor: pointer;
+}
+
+.customer-nav { display: flex; gap: 4px; }
+
+.customer-nav a {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #718096;
+  transition: all 0.2s;
+}
+
+.customer-nav a:hover { background: #f5f6fa; color: #1a1a2e; }
+.customer-nav a.active { background: #fff0e6; color: #e85d04; font-weight: 600; }
+
+.customer-actions { display: flex; align-items: center; gap: 16px; position: relative; }
+
+.cart-btn {
+  position: relative;
+  font-size: 22px;
+  padding: 4px;
+}
+
+.cart-count {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background: #e85d04;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cust-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.cust-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: #e85d04;
+  color: white;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.cust-dropdown {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  padding: 8px;
+  min-width: 140px;
+}
+
+.cust-dropdown button {
+  width: 100%;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 14px;
+  border-radius: 6px;
+  background: none;
+  color: #2d3748;
+}
+
+.cust-dropdown button:hover { background: #f5f6fa; }
+
+.customer-main { padding: 32px; max-width: 1200px; margin: 0 auto; }

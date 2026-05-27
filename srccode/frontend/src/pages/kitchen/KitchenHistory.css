@@ -1,0 +1,19 @@
+.kitchen-history { color: white; }
+.kitchen-history-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; }
+
+.history-list { display: flex; flex-direction: column; gap: 10px; }
+
+.history-card {
+  background: #16213e;
+  border-radius: 10px;
+  padding: 14px 16px;
+  border: 1px solid rgba(56,161,105,0.3);
+}
+
+.history-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.history-id { font-weight: 700; color: #68d391; font-size: 14px; }
+.history-table { font-size: 13px; color: #a0aec0; }
+.history-time { font-size: 13px; color: #68d391; margin-left: auto; }
+
+.history-items { display: flex; flex-wrap: wrap; gap: 6px; }
+.history-tag { background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #e2e8f0; }
