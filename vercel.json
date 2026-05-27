@@ -1,6 +1,7 @@
 {
-  "buildCommand": "cd srccode/frontend && npm install && npm run build",
+  "buildCommand": "npm --prefix srccode/frontend install && npm --prefix srccode/frontend run build",
   "outputDirectory": "srccode/frontend/build",
+  "framework": null,
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
