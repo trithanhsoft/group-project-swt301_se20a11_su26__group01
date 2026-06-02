@@ -1,0 +1,33 @@
+.kitchen-layout { min-height: 100vh; background: #1a1a2e; display: flex; flex-direction: column; }
+
+.kitchen-header {
+  background: #16213e;
+  padding: 0 24px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #e85d04;
+}
+
+.kitchen-brand { color: white; font-size: 18px; font-weight: 700; }
+
+.kitchen-nav { display: flex; gap: 8px; }
+
+.kitchen-nav a {
+  color: #a0aec0;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.kitchen-nav a:hover { background: rgba(255,255,255,0.08); color: white; }
+.kitchen-nav a.active { background: #e85d04; color: white; }
+
+.kitchen-user { display: flex; align-items: center; gap: 12px; color: #a0aec0; font-size: 13px; }
+.kitchen-user button { background: none; color: #a0aec0; font-size: 13px; }
+.kitchen-user button:hover { color: white; }
+
+.kitchen-main { flex: 1; padding: 24px; }
