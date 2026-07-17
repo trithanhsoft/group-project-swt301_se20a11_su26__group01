@@ -15,3 +15,21 @@
 }
 
 .period-tabs { display: flex; gap: 8px; }
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+}
+
+.period-tabs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}

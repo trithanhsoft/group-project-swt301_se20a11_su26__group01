@@ -1,89 +1,209 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import API from '../services/api';
 import './Tables.css';
 
-const initialTables = [
-  { id: 1, name: 'Bàn 1',  capacity: 2, status: 'empty' },
-  { id: 2, name: 'Bàn 2',  capacity: 4, status: 'occupied' },
-  { id: 3, name: 'Bàn 3',  capacity: 4, status: 'occupied' },
-  { id: 4, name: 'Bàn 4',  capacity: 6, status: 'reserved' },
-  { id: 5, name: 'Bàn 5',  capacity: 2, status: 'empty' },
-  { id: 6, name: 'Bàn 6',  capacity: 4, status: 'occupied' },
-  { id: 7, name: 'Bàn 7',  capacity: 8, status: 'empty' },
-  { id: 8, name: 'Bàn 8',  capacity: 6, status: 'occupied' },
-  { id: 9, name: 'Bàn 9',  capacity: 4, status: 'reserved' },
-  { id: 10, name: 'Bàn 10', capacity: 2, status: 'empty' },
-  { id: 11, name: 'Bàn 11', capacity: 4, status: 'occupied' },
-  { id: 12, name: 'Bàn 12', capacity: 6, status: 'empty' },
+const statusLabel = {
+  EMPTY: 'Trống',
+  OCCUPIED: 'Có khách',
+  RESERVED: 'Đặt trước',
+  MERGED: 'Gộp bàn',
+  INACTIVE: 'Ngưng dùng'
+};
+
+const statusClass = {
+  EMPTY: 'table-empty',
+  OCCUPIED: 'table-occupied',
+  RESERVED: 'table-reserved',
+  MERGED: 'table-merged',
+  INACTIVE: 'table-inactive'
+};
+
+const filterOptions = [
+  { value: 'all', label: 'Tất cả' },
+  { value: 'EMPTY', label: 'Trống' },
+  { value: 'OCCUPIED', label: 'Có khách' },
+  { value: 'RESERVED', label: 'Đặt trước' },
+  { value: 'MERGED', label: 'Gộp bàn' },
+  { value: 'INACTIVE', label: 'Ngưng dùng' }
 ];
 
-const statusLabel = { empty: 'Trống', occupied: 'Có khách', reserved: 'Đặt trước' };
-const statusClass = { empty: 'table-empty', occupied: 'table-occupied', reserved: 'table-reserved' };
-
 function Tables() {
-  const [tables, setTables] = useState(initialTables);
+  const [tables, setTables] = useState([]);
   const [filter, setFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const filtered = filter === 'all' ? tables : tables.filter(t => t.status === filter);
+  useEffect(() => {
+    fetchTables();
+  }, []);
 
-  const cycleStatus = (id) => {
-    const cycle = { empty: 'occupied', occupied: 'reserved', reserved: 'empty' };
-    setTables(prev => prev.map(t => t.id === id ? { ...t, status: cycle[t.status] } : t));
+  const getApiMessage = (data, fallback) => {
+    if (!data) return fallback;
+
+    if (typeof data === 'string') {
+      return data;
+    }
+
+    if (typeof data === 'object') {
+      return data.message || data.error || data.detail || fallback;
+    }
+
+    return fallback;
   };
+
+  const fetchTables = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await API.get('/tables');
+      setTables(response.data || []);
+    } catch (error) {
+      console.error('Fetch tables error:', error);
+
+      setError(
+        getApiMessage(
+          error.response?.data,
+          'Không thể tải danh sách bàn'
+        )
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredTables =
+    filter === 'all'
+      ? tables
+      : tables.filter((table) => table.status === filter);
 
   const counts = {
-    empty: tables.filter(t => t.status === 'empty').length,
-    occupied: tables.filter(t => t.status === 'occupied').length,
-    reserved: tables.filter(t => t.status === 'reserved').length,
+    EMPTY: tables.filter((table) => table.status === 'EMPTY').length,
+    OCCUPIED: tables.filter((table) => table.status === 'OCCUPIED').length,
+    RESERVED: tables.filter((table) => table.status === 'RESERVED').length,
+    MERGED: tables.filter((table) => table.status === 'MERGED').length,
+    INACTIVE: tables.filter((table) => table.status === 'INACTIVE').length
   };
+
+  if (loading) {
+    return (
+      <div className="tables-page">
+        <h1 className="page-title">Quản lý bàn</h1>
+
+        <div className="table-summary">
+          ⏳ Đang tải danh sách bàn...
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="tables-page">
+        <div className="page-header">
+          <h1 className="page-title">Quản lý bàn</h1>
+
+          <button className="btn-primary" onClick={fetchTables}>
+            🔄 Thử lại
+          </button>
+        </div>
+
+        <div className="table-summary" style={{ color: '#dc2626' }}>
+          ⚠️ {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="tables-page">
       <div className="page-header">
         <h1 className="page-title">Quản lý bàn</h1>
-        <button className="btn-primary">+ Thêm bàn</button>
+
+        <button className="btn-primary" onClick={fetchTables}>
+          🔄 Làm mới
+        </button>
       </div>
 
       <div className="table-summary">
         <div className="summary-item">
           <span className="dot dot-empty"></span>
-          <span>Trống: <strong>{counts.empty}</strong></span>
+          <span>Trống: <strong>{counts.EMPTY}</strong></span>
         </div>
+
         <div className="summary-item">
           <span className="dot dot-occupied"></span>
-          <span>Có khách: <strong>{counts.occupied}</strong></span>
+          <span>Có khách: <strong>{counts.OCCUPIED}</strong></span>
         </div>
+
         <div className="summary-item">
           <span className="dot dot-reserved"></span>
-          <span>Đặt trước: <strong>{counts.reserved}</strong></span>
+          <span>Đặt trước: <strong>{counts.RESERVED}</strong></span>
+        </div>
+
+        <div className="summary-item">
+          <span className="dot dot-merged"></span>
+          <span>Gộp bàn: <strong>{counts.MERGED}</strong></span>
+        </div>
+
+        <div className="summary-item">
+          <span className="dot dot-inactive"></span>
+          <span>Ngưng dùng: <strong>{counts.INACTIVE}</strong></span>
         </div>
       </div>
 
       <div className="filter-tabs">
-        {['all', 'empty', 'occupied', 'reserved'].map(f => (
+        {filterOptions.map((option) => (
           <button
-            key={f}
-            className={`filter-tab ${filter === f ? 'active' : ''}`}
-            onClick={() => setFilter(f)}
+            key={option.value}
+            className={`filter-tab ${filter === option.value ? 'active' : ''}`}
+            onClick={() => setFilter(option.value)}
           >
-            {f === 'all' ? 'Tất cả' : statusLabel[f]}
+            {option.label}
           </button>
         ))}
       </div>
 
-      <div className="tables-grid">
-        {filtered.map(table => (
-          <div
-            key={table.id}
-            className={`table-card ${statusClass[table.status]}`}
-            onClick={() => cycleStatus(table.id)}
-          >
-            <div className="table-icon">🪑</div>
-            <h3 className="table-name">{table.name}</h3>
-            <p className="table-capacity">{table.capacity} người</p>
-            <span className="table-status-badge">{statusLabel[table.status]}</span>
-          </div>
-        ))}
-      </div>
+      {filteredTables.length === 0 ? (
+        <div className="table-summary">
+          Không có bàn nào phù hợp với bộ lọc hiện tại.
+        </div>
+      ) : (
+        <div className="tables-grid">
+          {filteredTables.map((table) => (
+            <div
+              key={table.tableId}
+              className={`table-card ${statusClass[table.status] || ''}`}
+            >
+              <div className="table-icon">🪑</div>
+
+              <h3 className="table-name">
+                {table.tableName || `Bàn ${table.tableId}`}
+              </h3>
+
+              <p className="table-capacity">
+                {table.capacity || 0} người
+              </p>
+
+              {table.currentOrderCode && (
+                <p className="table-order-code">
+                  {table.currentOrderCode}
+                </p>
+              )}
+
+              {table.reservedBy && (
+                <p className="table-reserved-by">
+                  {table.reservedBy}
+                </p>
+              )}
+
+              <span className="table-status-badge">
+                {statusLabel[table.status] || table.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

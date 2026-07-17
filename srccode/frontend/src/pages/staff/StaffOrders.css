@@ -163,3 +163,37 @@
 .filter-tab:hover { border-color: #e85d04; color: #e85d04; }
 .filter-tab.active { background: #e85d04; color: white; border-color: #e85d04; }
 .status-cancelled { background: #fed7d7; color: #9b2c2c; }
+
+.payos-qr-box {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.qr-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #ffffff;
+  padding: 18px;
+  border-radius: 16px;
+  margin: 16px auto;
+  width: fit-content;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.qr-amount {
+  font-size: 18px;
+  margin-top: 12px;
+}
+
+.qr-status {
+  font-size: 15px;
+  color: #666;
+}
+
+.qr-note {
+  font-size: 13px;
+  color: #777;
+  margin-top: 12px;
+  line-height: 1.5;
+}

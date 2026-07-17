@@ -235,6 +235,17 @@
   font-size: 14px;
   color: #2d3748;
 }
+.cust-dish-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.modal-img-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
 .combo-price { font-weight: 700; color: #e85d04; }
 .combo-save  { color: #38a169; font-weight: 600; }

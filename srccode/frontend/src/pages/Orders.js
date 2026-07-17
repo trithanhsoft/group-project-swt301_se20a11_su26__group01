@@ -1,141 +1,464 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import API from '../services/api';
 import './Orders.css';
 
-const allOrders = [
-  { id: '#0047', table: 'Bàn 3', waiter: 'Minh', items: ['Bò Wagyu nướng than hoa x1', 'Rượu vang đỏ Pháp x2'], total: 1140000, status: 'serving',   time: '18:32', date: '22/05/2026' },
-  { id: '#0046', table: 'Bàn 7', waiter: 'Lan',  items: ['Tôm hùm hấp bia x1', 'Cocktail Signature x2'],       total: 1040000, status: 'pending',   time: '18:28', date: '22/05/2026' },
-  { id: '#0045', table: 'Bàn 1', waiter: 'Hùng', items: ['Cá hồi áp chảo sốt chanh x2', 'Trà thảo mộc x1'],   total: 705000,  status: 'done',      time: '18:10', date: '22/05/2026' },
-  { id: '#0044', table: 'Bàn 5', waiter: 'Minh', items: ['Vịt quay Bắc Kinh x1', 'Bánh soufflé socola x2'],    total: 670000,  status: 'done',      time: '17:55', date: '22/05/2026' },
-  { id: '#0043', table: 'Bàn 9', waiter: 'Lan',  items: ['Sườn bò hầm rượu vang x2'],                          total: 760000,  status: 'cancelled', time: '17:40', date: '22/05/2026' },
-  { id: '#0042', table: 'Bàn 4', waiter: 'Hùng', items: ['Gỏi tôm hùm xoài xanh x2', 'Crème brûlée vani x2'], total: 630000,  status: 'done',      time: '17:20', date: '21/05/2026' },
-  { id: '#0041', table: 'Bàn 2', waiter: 'Minh', items: ['Súp bào ngư vi cá x3'],                               total: 555000,  status: 'done',      time: '12:30', date: '21/05/2026' },
-];
-
 const statusMap = {
-  pending:   { label: 'Chờ xác nhận', cls: 'status-pending' },
-  serving:   { label: 'Đang phục vụ', cls: 'status-serving' },
-  done:      { label: 'Hoàn thành',   cls: 'status-done' },
-  cancelled: { label: 'Đã huỷ',       cls: 'status-cancelled' },
+  PENDING: {
+    label: 'Chờ xác nhận',
+    cls: 'status-pending'
+  },
+  CONFIRMED: {
+    label: 'Đã xác nhận',
+    cls: 'status-serving'
+  },
+  PREPARING: {
+    label: 'Đang chế biến',
+    cls: 'status-serving'
+  },
+  READY: {
+    label: 'Sẵn sàng',
+    cls: 'status-ready'
+  },
+  COMPLETED: {
+    label: 'Hoàn thành',
+    cls: 'status-done'
+  },
+  CANCELLED: {
+    label: 'Đã huỷ',
+    cls: 'status-cancelled'
+  }
 };
 
+const filterOptions = [
+  ['all', 'Tất cả'],
+  ['PENDING', 'Chờ xác nhận'],
+  ['CONFIRMED', 'Đã xác nhận'],
+  ['PREPARING', 'Đang chế biến'],
+  ['READY', 'Sẵn sàng'],
+  ['COMPLETED', 'Hoàn thành'],
+  ['CANCELLED', 'Đã huỷ']
+];
+
 function Orders() {
-  const [filter, setFilter]   = useState('all');
-  const [tab, setTab]         = useState('orders'); // orders | report
+  const [orders, setOrders] = useState([]);
+  const [filter, setFilter] = useState('all');
+  const [tab, setTab] = useState('orders');
   const [expanded, setExpanded] = useState(null);
+  const [search, setSearch] = useState('');
 
-  const filtered = filter === 'all' ? allOrders : allOrders.filter(o => o.status === filter);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Báo cáo đơn hàng
-  const totalRevenue  = allOrders.filter(o => o.status === 'done').reduce((s, o) => s + o.total, 0);
-  const totalOrders   = allOrders.length;
-  const doneOrders    = allOrders.filter(o => o.status === 'done').length;
-  const cancelOrders  = allOrders.filter(o => o.status === 'cancelled').length;
-  const avgOrder      = doneOrders > 0 ? Math.round(totalRevenue / doneOrders) : 0;
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
-  // Waiter stats
-  const waiterStats = allOrders.reduce((acc, o) => {
-    if (!acc[o.waiter]) acc[o.waiter] = { orders: 0, revenue: 0 };
-    acc[o.waiter].orders++;
-    if (o.status === 'done') acc[o.waiter].revenue += o.total;
-    return acc;
-  }, {});
+  const getApiMessage = (data, fallback) => {
+    if (!data) return fallback;
+
+    if (typeof data === 'string') {
+      return data;
+    }
+
+    if (typeof data === 'object') {
+      return data.message || data.error || data.detail || fallback;
+    }
+
+    return fallback;
+  };
+
+  const fetchOrders = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await API.get('/orders');
+      setOrders(response.data || []);
+    } catch (error) {
+      console.error('Fetch admin orders error:', error);
+
+      setError(
+        getApiMessage(
+          error.response?.data,
+          'Không thể tải danh sách đơn hàng'
+        )
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatMoney = (value) => {
+    return `${Number(value || 0).toLocaleString('vi-VN')}đ`;
+  };
+
+  const formatDate = (dateValue) => {
+    if (!dateValue) return '';
+
+    const date = new Date(dateValue);
+
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+
+    return date.toLocaleDateString('vi-VN');
+  };
+
+  const formatTime = (dateValue) => {
+    if (!dateValue) return '';
+
+    const date = new Date(dateValue);
+
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+
+    return date.toLocaleTimeString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getOrderItems = (order) => {
+    return order.items || order.orderItems || [];
+  };
+
+  const getItemLabel = (item) => {
+    const name = item.foodName || item.name || 'Món ăn';
+    const quantity = item.quantity || 0;
+
+    return `${name} x${quantity}`;
+  };
+
+  const getItemCount = (order) => {
+    return getOrderItems(order).reduce(
+      (sum, item) => sum + Number(item.quantity || 0),
+      0
+    );
+  };
+
+  const getCustomerName = (order) => {
+    return (
+      order.customerName ||
+      order.userName ||
+      order.username ||
+      'Khách vãng lai'
+    );
+  };
+
+  const getStatusInfo = (status) => {
+    return (
+      statusMap[status] || {
+        label: status || 'Không xác định',
+        cls: 'status-pending'
+      }
+    );
+  };
+
+  const filteredOrders = orders.filter((order) => {
+    const keyword = search.trim().toLowerCase();
+
+    const matchStatus =
+      filter === 'all' ||
+      order.status === filter;
+
+    const matchSearch =
+      !keyword ||
+      String(order.orderCode || '').toLowerCase().includes(keyword) ||
+      String(order.orderId || '').toLowerCase().includes(keyword) ||
+      String(order.tableName || '').toLowerCase().includes(keyword) ||
+      String(order.customerName || '').toLowerCase().includes(keyword) ||
+      String(order.customerPhone || '').toLowerCase().includes(keyword);
+
+    return matchStatus && matchSearch;
+  });
+
+  const completedOrders = orders.filter(order => order.status === 'COMPLETED');
+  const cancelledOrders = orders.filter(order => order.status === 'CANCELLED');
+
+  const totalRevenue = completedOrders.reduce(
+    (sum, order) => sum + Number(order.totalAmount || 0),
+    0
+  );
+
+  const totalOrders = orders.length;
+  const doneOrders = completedOrders.length;
+  const cancelOrders = cancelledOrders.length;
+  const avgOrder = doneOrders > 0 ? Math.round(totalRevenue / doneOrders) : 0;
+
+  const pendingOrders = orders.filter(order => order.status === 'PENDING').length;
+  const activeOrders = orders.filter(order =>
+    ['CONFIRMED', 'PREPARING', 'READY'].includes(order.status)
+  ).length;
+
+  if (loading) {
+    return (
+      <div className="orders-page">
+        <h1 className="page-title">Đơn hàng</h1>
+
+        <div className="card" style={{ padding: 24, textAlign: 'center' }}>
+          ⏳ Đang tải danh sách đơn hàng...
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="orders-page">
+        <div className="page-header">
+          <h1 className="page-title">Đơn hàng</h1>
+
+          <button className="btn-primary" onClick={fetchOrders}>
+            🔄 Thử lại
+          </button>
+        </div>
+
+        <div className="card" style={{ padding: 24, color: '#dc2626' }}>
+          ⚠️ {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="orders-page">
       <div className="page-header">
         <h1 className="page-title">Đơn hàng</h1>
-        <div style={{display:'flex', gap:8}}>
-          <button className={`tab-btn ${tab === 'orders' ? 'active' : ''}`} onClick={() => setTab('orders')}>📋 Danh sách</button>
-          <button className={`tab-btn ${tab === 'report' ? 'active' : ''}`} onClick={() => setTab('report')}>📊 Báo cáo</button>
+
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            className={`tab-btn ${tab === 'orders' ? 'active' : ''}`}
+            onClick={() => setTab('orders')}
+          >
+            📋 Danh sách
+          </button>
+
+          <button
+            className={`tab-btn ${tab === 'report' ? 'active' : ''}`}
+            onClick={() => setTab('report')}
+          >
+            📊 Báo cáo
+          </button>
+
+          <button className="btn-primary" onClick={fetchOrders}>
+            🔄 Làm mới
+          </button>
         </div>
       </div>
 
-      {/* ── Tab: Báo cáo ── */}
       {tab === 'report' && (
         <div className="order-report">
           <div className="report-stats-grid">
             <div className="card rstat">
               <p className="rstat-label">Tổng doanh thu</p>
-              <h3 className="rstat-val">{totalRevenue.toLocaleString('vi-VN')}đ</h3>
+              <h3 className="rstat-val">{formatMoney(totalRevenue)}</h3>
             </div>
+
             <div className="card rstat">
               <p className="rstat-label">Tổng đơn</p>
               <h3 className="rstat-val">{totalOrders}</h3>
             </div>
+
+            <div className="card rstat">
+              <p className="rstat-label">Chờ xác nhận</p>
+              <h3 className="rstat-val" style={{ color: '#d69e2e' }}>
+                {pendingOrders}
+              </h3>
+            </div>
+
+            <div className="card rstat">
+              <p className="rstat-label">Đang xử lý</p>
+              <h3 className="rstat-val" style={{ color: '#3182ce' }}>
+                {activeOrders}
+              </h3>
+            </div>
+
             <div className="card rstat">
               <p className="rstat-label">Hoàn thành</p>
-              <h3 className="rstat-val" style={{color:'#38a169'}}>{doneOrders}</h3>
+              <h3 className="rstat-val" style={{ color: '#38a169' }}>
+                {doneOrders}
+              </h3>
             </div>
+
             <div className="card rstat">
               <p className="rstat-label">Đã hủy</p>
-              <h3 className="rstat-val" style={{color:'#e53e3e'}}>{cancelOrders}</h3>
+              <h3 className="rstat-val" style={{ color: '#e53e3e' }}>
+                {cancelOrders}
+              </h3>
             </div>
+
             <div className="card rstat">
               <p className="rstat-label">TB / đơn</p>
-              <h3 className="rstat-val">{avgOrder.toLocaleString('vi-VN')}đ</h3>
+              <h3 className="rstat-val">{formatMoney(avgOrder)}</h3>
             </div>
           </div>
 
-          <div className="card" style={{marginTop:20}}>
-            <h3 style={{fontSize:15, fontWeight:700, marginBottom:14}}>👤 Hiệu suất nhân viên</h3>
+          <div className="card" style={{ marginTop: 20 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>
+              📊 Thống kê theo trạng thái
+            </h3>
+
             <table className="data-table">
               <thead>
-                <tr><th>Nhân viên</th><th>Số đơn</th><th>Doanh thu</th></tr>
+                <tr>
+                  <th>Trạng thái</th>
+                  <th>Số đơn</th>
+                  <th>Tổng tiền</th>
+                </tr>
               </thead>
+
               <tbody>
-                {Object.entries(waiterStats).map(([name, s]) => (
-                  <tr key={name}>
-                    <td><strong>{name}</strong></td>
-                    <td>{s.orders} đơn</td>
-                    <td style={{color:'#e85d04', fontWeight:700}}>{s.revenue.toLocaleString('vi-VN')}đ</td>
-                  </tr>
-                ))}
+                {filterOptions
+                  .filter(([value]) => value !== 'all')
+                  .map(([status]) => {
+                    const statusOrders = orders.filter(order => order.status === status);
+                    const statusTotal = statusOrders.reduce(
+                      (sum, order) => sum + Number(order.totalAmount || 0),
+                      0
+                    );
+                    const statusInfo = getStatusInfo(status);
+
+                    return (
+                      <tr key={status}>
+                        <td>
+                          <span className={`status-badge ${statusInfo.cls}`}>
+                            {statusInfo.label}
+                          </span>
+                        </td>
+                        <td>{statusOrders.length} đơn</td>
+                        <td style={{ color: '#e85d04', fontWeight: 700 }}>
+                          {formatMoney(statusTotal)}
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
           </div>
         </div>
       )}
 
-      {/* ── Tab: Danh sách ── */}
       {tab === 'orders' && (
         <>
+          <div className="order-toolbar">
+            <input
+              className="search-input"
+              placeholder="🔍 Tìm mã đơn, bàn, khách, số điện thoại..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
           <div className="filter-tabs" style={{ marginBottom: 16 }}>
-            {[['all','Tất cả'], ['pending','Chờ xác nhận'], ['serving','Đang phục vụ'], ['done','Hoàn thành'], ['cancelled','Đã huỷ']].map(([val, label]) => (
-              <button key={val} className={`filter-tab ${filter === val ? 'active' : ''}`}
-                onClick={() => setFilter(val)}>{label}</button>
+            {filterOptions.map(([value, label]) => (
+              <button
+                key={value}
+                className={`filter-tab ${filter === value ? 'active' : ''}`}
+                onClick={() => setFilter(value)}
+              >
+                {label}
+              </button>
             ))}
           </div>
 
-          <div className="orders-list">
-            {filtered.map(order => (
-              <div key={order.id} className="order-row card">
-                <div className="order-col order-id-col">
-                  <span className="order-id">{order.id}</span>
-                  <span className="order-time">{order.time}</span>
-                  <span style={{fontSize:11, color:'#a0aec0'}}>{order.date}</span>
-                </div>
-                <div className="order-col">
-                  <span className="order-table">🪑 {order.table}</span>
-                  <span className="order-waiter">👤 {order.waiter}</span>
-                </div>
-                <div className="order-col order-items-col">
-                  {order.items.map((item, i) => <span key={i} className="order-item-tag">{item}</span>)}
-                </div>
-                <div className="order-col">
-                  <span className="order-total">{order.total.toLocaleString('vi-VN')}đ</span>
-                </div>
-                <div className="order-col">
-                  <span className={`status-badge ${statusMap[order.status].cls}`}>
-                    {statusMap[order.status].label}
-                  </span>
-                </div>
-                <div className="order-col order-actions">
-                  <button className="action-btn" title="Xem chi tiết"
-                    onClick={() => setExpanded(expanded === order.id ? null : order.id)}>👁️</button>
-                </div>
-              </div>
-            ))}
-          </div>
+          {filteredOrders.length === 0 ? (
+            <div className="card" style={{ padding: 24, textAlign: 'center' }}>
+              Không có đơn hàng nào phù hợp.
+            </div>
+          ) : (
+            <div className="orders-list">
+              {filteredOrders.map(order => {
+                const statusInfo = getStatusInfo(order.status);
+                const items = getOrderItems(order);
+                const isExpanded = expanded === order.orderId;
+
+                return (
+                  <div key={order.orderId} className="order-row card">
+                    <div className="order-col order-id-col">
+                      <span className="order-id">
+                        {order.orderCode || `#${order.orderId}`}
+                      </span>
+
+                      <span className="order-time">
+                        {formatTime(order.createdAt)}
+                      </span>
+
+                      <span style={{ fontSize: 11, color: '#a0aec0' }}>
+                        {formatDate(order.createdAt)}
+                      </span>
+                    </div>
+
+                    <div className="order-col">
+                      <span className="order-table">
+                        🪑 {order.tableName || 'Không có bàn'}
+                      </span>
+
+                      <span className="order-waiter">
+                        👤 {getCustomerName(order)}
+                      </span>
+
+                      {order.customerPhone && (
+                        <span className="order-waiter">
+                          📞 {order.customerPhone}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="order-col order-items-col">
+                      {items.slice(0, isExpanded ? items.length : 2).map((item, index) => (
+                        <span key={index} className="order-item-tag">
+                          {getItemLabel(item)}
+                        </span>
+                      ))}
+
+                      {!isExpanded && items.length > 2 && (
+                        <span className="order-item-tag">
+                          +{items.length - 2} món khác
+                        </span>
+                      )}
+
+                      {items.length === 0 && (
+                        <span className="order-item-tag">
+                          {getItemCount(order)} món
+                        </span>
+                      )}
+
+                      {isExpanded && order.note && (
+                        <span className="order-note">
+                          📝 {order.note}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="order-col">
+                      <span className="order-total">
+                        {formatMoney(order.totalAmount)}
+                      </span>
+                    </div>
+
+                    <div className="order-col">
+                      <span className={`status-badge ${statusInfo.cls}`}>
+                        {statusInfo.label}
+                      </span>
+                    </div>
+
+                    <div className="order-col order-actions">
+                      <button
+                        className="action-btn"
+                        title="Xem chi tiết"
+                        onClick={() =>
+                          setExpanded(isExpanded ? null : order.orderId)
+                        }
+                      >
+                        {isExpanded ? '🙈' : '👁️'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </>
       )}
     </div>
