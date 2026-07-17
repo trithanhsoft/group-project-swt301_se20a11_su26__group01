@@ -20,10 +20,22 @@ function CustomerLayout() {
         </div>
 
         <nav className="customer-nav">
-          <NavLink to="/customer/menu"        className={({ isActive }) => isActive ? 'active' : ''}>Thực đơn</NavLink>
-          <NavLink to="/customer/reservation" className={({ isActive }) => isActive ? 'active' : ''}>Đặt bàn</NavLink>
-          <NavLink to="/customer/orders"      className={({ isActive }) => isActive ? 'active' : ''}>Đơn hàng</NavLink>
-        </nav>
+  <NavLink to="/customer/menu" className={({ isActive }) => isActive ? 'active' : ''}>
+    Thực đơn
+  </NavLink>
+
+  <NavLink to="/customer/reservation" className={({ isActive }) => isActive ? 'active' : ''}>
+    Đặt bàn
+  </NavLink>
+
+  <NavLink to="/customer/orders" className={({ isActive }) => isActive ? 'active' : ''}>
+    Đơn hàng
+  </NavLink>
+
+  <NavLink to="/customer/feedback" className={({ isActive }) => isActive ? 'active' : ''}>
+    Phản hồi
+  </NavLink>
+</nav>
 
         <div className="customer-actions">
           <NavLink to="/customer/cart" className="cart-btn">

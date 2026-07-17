@@ -8,9 +8,18 @@ function Header({ onToggleSidebar }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    const confirmLogout = window.confirm('Bạn có chắc muốn đăng xuất không?');
+
+    if (!confirmLogout) {
+      return;
+    }
+
     logout();
     navigate('/login');
   };
+
+  const displayName = user?.username || user?.name || 'User';
+  const displayRole = user?.roleName || user?.role || 'CUSTOMER';
 
   return (
     <header className="header">
@@ -21,7 +30,10 @@ function Header({ onToggleSidebar }) {
       <div className="header-right">
         <div className="header-date">
           {new Date().toLocaleDateString('vi-VN', {
-            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
           })}
         </div>
 
@@ -31,14 +43,21 @@ function Header({ onToggleSidebar }) {
         </div>
 
         <div className="header-user">
-          <div className="user-avatar">{user?.name?.charAt(0) || 'A'}</div>
+          <div className="user-avatar">
+            {displayName.charAt(0).toUpperCase()}
+          </div>
+
           <div className="user-info">
-            <span className="user-name">{user?.name || 'Admin'}</span>
-            <span className="user-role">Quản lý</span>
+            <span className="user-name">{displayName}</span>
+            <span className="user-role">{displayRole}</span>
           </div>
         </div>
 
-        <button className="logout-btn" onClick={handleLogout} title="Đăng xuất">
+        <button
+          className="logout-btn"
+          onClick={handleLogout}
+          title="Đăng xuất"
+        >
           🚪
         </button>
       </div>
@@ -47,4 +66,3 @@ function Header({ onToggleSidebar }) {
 }
 
 export default Header;
-

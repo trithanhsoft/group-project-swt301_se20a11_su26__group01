@@ -1,207 +1,417 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
+import API from '../../services/api';
 import './KitchenQueue.css';
 
-const initialQueue = [
-  {
-    id: '#S013', table: 'Bàn 3', time: '18:40', arrivedAt: Date.now() - 12 * 60000,
-    items: [
-      { name: 'Bò Wagyu nướng than hoa',  qty: 2, status: 'cooking' },
-      { name: 'Khoai tây nghiền truffle',  qty: 2, status: 'pending' },
-      { name: 'Rượu vang đỏ Pháp',        qty: 2, status: 'done' },
-    ],
+const statusMap = {
+  CONFIRMED: {
+    label: 'Chờ nấu',
+    cls: 'item-pending',
+    next: 'PREPARING',
+    action: '🔥 Bắt đầu nấu'
   },
-  {
-    id: '#S016', table: 'Bàn 5', time: '18:45', arrivedAt: Date.now() - 7 * 60000,
-    items: [
-      { name: 'Tôm hùm hấp bia',    qty: 1, status: 'cooking' },
-      { name: 'Súp bào ngư vi cá',  qty: 2, status: 'pending' },
-      { name: 'Cocktail Signature', qty: 2, status: 'done' },
-    ],
-  },
-  {
-    id: '#S017', table: 'Bàn 9', time: '18:52', arrivedAt: Date.now() - 3 * 60000,
-    items: [
-      { name: 'Cá hồi áp chảo sốt chanh', qty: 2, status: 'pending' },
-      { name: 'Gỏi tôm hùm xoài xanh',    qty: 1, status: 'pending' },
-      { name: 'Bánh soufflé socola',        qty: 2, status: 'pending' },
-    ],
-  },
-];
-
-const itemStatusMap = {
-  pending: { label: 'Chờ',      cls: 'item-pending', next: 'cooking' },
-  cooking: { label: 'Đang nấu', cls: 'item-cooking', next: 'done' },
-  done:    { label: 'Xong',     cls: 'item-done',    next: null },
+  PREPARING: {
+    label: 'Đang nấu',
+    cls: 'item-cooking',
+    next: 'READY',
+    action: '✅ Sẵn sàng'
+  }
 };
 
-function elapsed(arrivedAt) {
-  const mins = Math.floor((Date.now() - arrivedAt) / 60000);
+function elapsed(createdAt) {
+  if (!createdAt) return '';
+
+  const createdDate = new Date(createdAt);
+
+  if (Number.isNaN(createdDate.getTime())) {
+    return '';
+  }
+
+  const mins = Math.floor((Date.now() - createdDate.getTime()) / 60000);
+
   if (mins < 1) return '< 1 phút';
+
   return `${mins} phút`;
 }
 
-function urgencyClass(arrivedAt) {
-  const mins = Math.floor((Date.now() - arrivedAt) / 60000);
+function urgencyClass(createdAt) {
+  if (!createdAt) return '';
+
+  const createdDate = new Date(createdAt);
+
+  if (Number.isNaN(createdDate.getTime())) {
+    return '';
+  }
+
+  const mins = Math.floor((Date.now() - createdDate.getTime()) / 60000);
+
   if (mins >= 20) return 'urgent-high';
   if (mins >= 10) return 'urgent-med';
+
   return '';
 }
 
 function KitchenQueue() {
-  const [queue, setQueue]     = useState(initialQueue);
-  const [done, setDone]       = useState([]);
-  const [clock, setClock]     = useState(new Date());
-  const [filter, setFilter]   = useState('all'); // all | pending | cooking | done
-  const [tick, setTick]       = useState(0);     // force re-render mỗi giây để cập nhật elapsed
-  const alertRef              = useRef(false);
+  const [queue, setQueue] = useState([]);
+  const [completedToday, setCompletedToday] = useState([]);
+  const [clock, setClock] = useState(new Date());
+  const [filter, setFilter] = useState('all'); // all | CONFIRMED | PREPARING
+  const [loading, setLoading] = useState(true);
+  const [actionLoadingId, setActionLoadingId] = useState(null);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const t = setInterval(() => {
+    fetchKitchenOrders();
+
+    const timer = setInterval(() => {
       setClock(new Date());
-      setTick(n => n + 1);
     }, 1000);
-    return () => clearInterval(t);
+
+    return () => clearInterval(timer);
   }, []);
 
-  // Cập nhật trạng thái từng món
-  const advanceItem = (orderId, itemIdx) => {
-    setQueue(prev => prev.map(order => {
-      if (order.id !== orderId) return order;
-      const items = order.items.map((item, i) => {
-        if (i !== itemIdx || !itemStatusMap[item.status].next) return item;
-        return { ...item, status: itemStatusMap[item.status].next };
+  const getApiMessage = (data, fallback) => {
+    if (!data) return fallback;
+
+    if (typeof data === 'string') {
+      return data;
+    }
+
+    if (typeof data === 'object') {
+      return data.message || data.error || data.detail || fallback;
+    }
+
+    return fallback;
+  };
+
+  const fetchKitchenOrders = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const [confirmedRes, preparingRes] = await Promise.all([
+        API.get('/orders/status/CONFIRMED'),
+        API.get('/orders/status/PREPARING')
+      ]);
+
+      const confirmedOrders = confirmedRes.data || [];
+      const preparingOrders = preparingRes.data || [];
+
+      const mergedOrders = [...confirmedOrders, ...preparingOrders].sort((a, b) => {
+        return new Date(a.createdAt) - new Date(b.createdAt);
       });
-      return { ...order, items };
-    }));
+
+      setQueue(mergedOrders);
+    } catch (error) {
+      console.error('Fetch kitchen orders error:', error);
+
+      setError(
+        getApiMessage(
+          error.response?.data,
+          'Không thể tải hàng đợi bếp'
+        )
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Mark toàn bộ order là xong → chuyển sang history
-  const completeOrder = (orderId) => {
-    const order = queue.find(o => o.id === orderId);
-    if (!order) return;
-    setDone(prev => [{ ...order, completedAt: new Date().toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit' }) }, ...prev]);
-    setQueue(prev => prev.filter(o => o.id !== orderId));
+  const updateOrderStatus = async (order, nextStatus) => {
+    setActionLoadingId(order.orderId);
+    setError('');
+
+    try {
+      const response = await API.put(`/orders/${order.orderId}/status`, {
+        status: nextStatus
+      });
+
+      if (nextStatus === 'READY') {
+        setCompletedToday((prev) => [
+          {
+            ...response.data,
+            completedAt: new Date().toLocaleTimeString('vi-VN', {
+              hour: '2-digit',
+              minute: '2-digit'
+            })
+          },
+          ...prev
+        ]);
+
+        setQueue((prev) =>
+          prev.filter((item) => item.orderId !== order.orderId)
+        );
+      } else {
+        setQueue((prev) =>
+          prev.map((item) =>
+            item.orderId === order.orderId ? response.data : item
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Update kitchen order error:', error);
+
+      setError(
+        getApiMessage(
+          error.response?.data,
+          'Không thể cập nhật trạng thái đơn'
+        )
+      );
+    } finally {
+      setActionLoadingId(null);
+    }
   };
 
-  const allDone = (order) => order.items.every(i => i.status === 'done');
+  const formatTime = (value) => {
+    if (!value) return '';
 
-  // Filter
-  const filteredQueue = queue.filter(order => {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return date.toLocaleTimeString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatMoney = (value) => {
+    return Number(value || 0).toLocaleString('vi-VN');
+  };
+
+  const getOrderStatusInfo = (status) => {
+    return (
+      statusMap[status] || {
+        label: status || 'Không xác định',
+        cls: 'item-pending',
+        next: null,
+        action: ''
+      }
+    );
+  };
+
+  const getCustomerDisplay = (order) => {
+    return order.customerName || order.username || 'Khách vãng lai';
+  };
+
+  const getTableDisplay = (order) => {
+    return order.tableName || (order.tableId ? `Bàn ${order.tableId}` : 'Không có bàn');
+  };
+
+  const filteredQueue = queue.filter((order) => {
     if (filter === 'all') return true;
-    if (filter === 'pending') return order.items.some(i => i.status === 'pending');
-    if (filter === 'cooking') return order.items.some(i => i.status === 'cooking');
-    if (filter === 'done')    return allDone(order);
-    return true;
+    return order.status === filter;
   });
 
-  const cookingCount = queue.filter(o => o.items.some(i => i.status === 'cooking')).length;
-  const pendingCount = queue.filter(o => o.items.some(i => i.status === 'pending')).length;
+  const confirmedCount = queue.filter((order) => order.status === 'CONFIRMED').length;
+  const preparingCount = queue.filter((order) => order.status === 'PREPARING').length;
+
+  if (loading) {
+    return (
+      <div className="kitchen-queue">
+        <div className="kitchen-topbar">
+          <div className="kitchen-clock">
+            🕐 {clock.toLocaleTimeString('vi-VN')}
+          </div>
+        </div>
+
+        <div className="kitchen-empty">
+          <p>⏳ Đang tải hàng đợi bếp...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="kitchen-queue">
-      {/* Header */}
       <div className="kitchen-topbar">
         <div className="kitchen-clock">
           🕐 {clock.toLocaleTimeString('vi-VN')}
         </div>
+
         <div className="kitchen-summary">
           <span className="ks-badge ks-total">{queue.length} đơn</span>
-          <span className="ks-badge ks-cooking">🔥 {cookingCount} đang nấu</span>
-          <span className="ks-badge ks-pending">⏳ {pendingCount} chờ</span>
-          <span className="ks-badge ks-done">✅ {done.length} hoàn thành</span>
+          <span className="ks-badge ks-pending">⏳ {confirmedCount} chờ nấu</span>
+          <span className="ks-badge ks-cooking">🔥 {preparingCount} đang nấu</span>
+          <span className="ks-badge ks-done">✅ {completedToday.length} sẵn sàng</span>
+
+          <button
+            className="kfilter-btn"
+            onClick={fetchKitchenOrders}
+            style={{ marginLeft: 8 }}
+          >
+            🔄 Làm mới
+          </button>
         </div>
       </div>
 
-      {/* Filter */}
       <div className="kitchen-filters">
-        {[['all','Tất cả'],['pending','Chờ nấu'],['cooking','Đang nấu'],['done','Sẵn sàng']].map(([v,l]) => (
-          <button key={v} className={`kfilter-btn ${filter === v ? 'active' : ''}`}
-            onClick={() => setFilter(v)}>{l}</button>
+        {[
+          ['all', 'Tất cả'],
+          ['CONFIRMED', 'Chờ nấu'],
+          ['PREPARING', 'Đang nấu']
+        ].map(([value, label]) => (
+          <button
+            key={value}
+            className={`kfilter-btn ${filter === value ? 'active' : ''}`}
+            onClick={() => setFilter(value)}
+          >
+            {label}
+          </button>
         ))}
       </div>
 
-      {/* Order cards */}
+      {error && (
+        <div className="kitchen-empty" style={{ color: '#dc2626' }}>
+          <p>⚠️ {error}</p>
+        </div>
+      )}
+
       <div className="kitchen-cards">
         {filteredQueue.length === 0 && (
           <div className="kitchen-empty">
-            <p>🎉 Không có đơn nào đang chờ</p>
+            <p>🎉 Không có đơn nào đang chờ bếp</p>
           </div>
         )}
-        {filteredQueue.map(order => {
-          const urgent = urgencyClass(order.arrivedAt);
-          const ready  = allDone(order);
+
+        {filteredQueue.map((order) => {
+          const urgent = urgencyClass(order.createdAt);
+          const statusInfo = getOrderStatusInfo(order.status);
+          const isActionLoading = actionLoadingId === order.orderId;
+
           return (
-            <div key={order.id} className={`kitchen-card ${ready ? 'all-done' : ''} ${urgent}`}>
+            <div
+              key={order.orderId}
+              className={`kitchen-card ${urgent}`}
+            >
               <div className="kcard-header">
                 <div className="kcard-left">
-                  <span className="kcard-id">{order.id}</span>
-                  <span className="kcard-table">🪑 {order.table}</span>
+                  <span className="kcard-id">
+                    {order.orderCode || `#${order.orderId}`}
+                  </span>
+
+                  <span className="kcard-table">
+                    🪑 {getTableDisplay(order)}
+                  </span>
+
+                  <span className="kcard-table">
+                    👤 {getCustomerDisplay(order)}
+                  </span>
+
+                  {order.customerPhone && (
+                    <span className="kcard-table">
+                      📞 {order.customerPhone}
+                    </span>
+                  )}
                 </div>
+
                 <div className="kcard-right">
-                  <span className="kcard-time">⏱ {order.time}</span>
+                  <span className="kcard-time">
+                    ⏱ {formatTime(order.createdAt)}
+                  </span>
+
                   <span className={`kcard-elapsed ${urgent}`}>
-                    {elapsed(order.arrivedAt)}
+                    {elapsed(order.createdAt)}
                     {urgent === 'urgent-high' && ' ⚠️'}
                   </span>
                 </div>
               </div>
 
-              {/* Items */}
               <div className="kcard-items">
-                {order.items.map((item, i) => (
-                  <div key={i} className={`kcard-item ${itemStatusMap[item.status].cls}`}>
+                {order.items?.map((item) => (
+                  <div
+                    key={item.orderItemId}
+                    className={`kcard-item ${statusInfo.cls}`}
+                  >
                     <div className="kitem-info">
-                      <span className="kitem-name">{item.name}</span>
-                      <span className="kitem-qty">× {item.qty}</span>
+                      <span className="kitem-name">
+                        {item.emoji ? `${item.emoji} ` : ''}
+                        {item.foodName}
+                      </span>
+
+                      <span className="kitem-qty">× {item.quantity}</span>
                     </div>
+
                     <div className="kitem-right">
-                      <span className="kitem-status-label">{itemStatusMap[item.status].label}</span>
-                      {itemStatusMap[item.status].next && (
-                        <button className="kitem-btn" onClick={() => advanceItem(order.id, i)}>
-                          {item.status === 'pending' ? '🔥 Bắt đầu' : '✓ Xong'}
-                        </button>
-                      )}
+                      <span className="kitem-status-label">
+                        {statusInfo.label}
+                      </span>
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* Footer */}
-              {ready ? (
-                <div className="kcard-ready">
-                  <span>✅ Tất cả món sẵn sàng!</span>
-                  <button className="kcard-serve-btn" onClick={() => completeOrder(order.id)}>
-                    🚀 Đã phục vụ
-                  </button>
-                </div>
-              ) : (
+              {order.note && (
                 <div className="kcard-progress">
-                  <div className="kprog-bar">
-                    <div className="kprog-fill" style={{
-                      width: `${Math.round(order.items.filter(i => i.status === 'done').length / order.items.length * 100)}%`
-                    }}></div>
-                  </div>
-                  <span className="kprog-text">
-                    {order.items.filter(i => i.status === 'done').length}/{order.items.length} món xong
-                  </span>
+                  <span className="kprog-text">📝 {order.note}</span>
                 </div>
               )}
+
+              <div className="kcard-progress">
+                <div className="kprog-bar">
+                  <div
+                    className="kprog-fill"
+                    style={{
+                      width: order.status === 'PREPARING' ? '60%' : '20%'
+                    }}
+                  ></div>
+                </div>
+
+                <span className="kprog-text">
+                  Tổng tiền: {formatMoney(order.totalAmount)}đ
+                </span>
+              </div>
+
+              <div className="kcard-ready">
+                <span>
+                  {order.status === 'CONFIRMED'
+                    ? '⏳ Đơn đã xác nhận, chờ bếp bắt đầu'
+                    : '🔥 Đơn đang được chế biến'}
+                </span>
+
+                {statusInfo.next && (
+                  <button
+                    className="kcard-serve-btn"
+                    disabled={isActionLoading}
+                    onClick={() => updateOrderStatus(order, statusInfo.next)}
+                  >
+                    {isActionLoading ? 'Đang xử lý...' : statusInfo.action}
+                  </button>
+                )}
+              </div>
             </div>
           );
         })}
       </div>
 
-      {/* Completed today */}
-      {done.length > 0 && (
+      {completedToday.length > 0 && (
         <div className="kitchen-done-section">
-          <h3 className="done-title">✅ Đã hoàn thành hôm nay ({done.length})</h3>
+          <h3 className="done-title">
+            ✅ Đã sẵn sàng hôm nay ({completedToday.length})
+          </h3>
+
           <div className="done-list">
-            {done.map((order, i) => (
-              <div key={i} className="done-card">
-                <span className="done-id">{order.id}</span>
-                <span className="done-table">🪑 {order.table}</span>
-                <span className="done-items">{order.items.length} món</span>
-                <span className="done-time">✅ {order.completedAt}</span>
+            {completedToday.map((order) => (
+              <div key={order.orderId} className="done-card">
+                <span className="done-id">
+                  {order.orderCode || `#${order.orderId}`}
+                </span>
+
+                <span className="done-table">
+                  🪑 {getTableDisplay(order)}
+                </span>
+
+                <span className="done-table">
+                  👤 {getCustomerDisplay(order)}
+                </span>
+
+                <span className="done-items">
+                  {order.items?.length || 0} món
+                </span>
+
+                <span className="done-time">
+                  ✅ {order.completedAt}
+                </span>
               </div>
             ))}
           </div>

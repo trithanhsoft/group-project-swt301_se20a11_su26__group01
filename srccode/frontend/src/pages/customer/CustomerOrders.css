@@ -51,3 +51,136 @@
 }
 
 .no-orders { text-align: center; padding: 60px; color: #718096; font-size: 16px; }
+
+/* ── Payment Banner ── */
+.payment-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #fff7ed, #fff0e0);
+  border: 1.5px solid #f6ad55;
+  border-radius: 14px;
+  padding: 14px 20px;
+  margin-bottom: 20px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.payment-banner-left { display: flex; align-items: center; gap: 12px; }
+.payment-banner-icon { font-size: 24px; }
+.payment-banner-title { font-size: 14px; font-weight: 700; color: #744210; margin-bottom: 2px; }
+.payment-banner-amount { font-size: 13px; color: #92400e; }
+.payment-banner-amount strong { color: #e85d04; }
+.payment-banner-btn {
+  background: #e85d04; color: white;
+  font-size: 13px; font-weight: 700;
+  padding: 10px 20px; border-radius: 10px;
+  white-space: nowrap; transition: background 0.2s;
+}
+.payment-banner-btn:hover { background: #c44d00; }
+
+/* ── Pay inline button (kế bên từng đơn) ── */
+.pay-inline-btn {
+  font-size: 11px; font-weight: 700;
+  background: #e85d04; color: white;
+  padding: 4px 10px; border-radius: 6px;
+  white-space: nowrap;
+}
+.pay-inline-btn:hover { background: #c44d00; }
+
+/* ── Pay detail button (trong expanded) ── */
+.pay-detail-btn {
+  background: #e85d04; color: white;
+  font-size: 13px; font-weight: 700;
+  padding: 10px 20px; border-radius: 10px;
+  margin-top: 8px; width: 100%;
+}
+.pay-detail-btn:hover { background: #c44d00; }
+
+/* ── Payment Modal ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 300;
+}
+.payment-modal {
+  width: 100%; max-width: 420px;
+  padding: 28px; margin: 16px;
+  border-radius: 20px;
+}
+.pay-modal-title { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+.pay-modal-order { font-size: 13px; color: #718096; margin-bottom: 4px; }
+.pay-modal-total {
+  font-size: 28px; font-weight: 900; color: #e85d04;
+  margin-bottom: 20px;
+}
+.pay-modal-total span { font-size: 16px; }
+
+/* Method options */
+.pay-methods { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.pay-method-option {
+  display: flex; align-items: center; gap: 12px;
+  border: 1.5px solid #e2e8f0; border-radius: 12px;
+  padding: 12px 14px; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+}
+.pay-method-option input { display: none; }
+.pay-method-option.selected { border-color: #e85d04; background: #fff7f3; }
+.pay-method-icon { font-size: 22px; }
+.pay-method-name { font-size: 14px; font-weight: 700; color: #2d3748; }
+.pay-method-desc { font-size: 12px; color: #a0aec0; }
+.pay-check {
+  margin-left: auto; color: #e85d04;
+  font-size: 16px; font-weight: 900;
+}
+
+/* QR display */
+.qr-display { text-align: center; margin-bottom: 16px; }
+.qr-mock-box {
+  width: 130px; height: 130px;
+  border: 3px solid #e2e8f0; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 8px;
+  background: #f7f8fa;
+}
+.qr-mock-inner { font-size: 32px; font-weight: 900; color: #a0aec0; }
+.qr-hint { font-size: 12px; color: #718096; margin-bottom: 4px; }
+.qr-amount { font-size: 16px; font-weight: 800; color: #e85d04; }
+
+/* COD note */
+.cod-note {
+  background: #f0fff4; border: 1px solid #c6f6d5;
+  border-radius: 10px; padding: 12px 14px;
+  font-size: 13px; color: #276749;
+  margin-bottom: 16px;
+}
+
+/* Modal buttons */
+.pay-modal-btns { display: flex; gap: 10px; margin-top: 4px; }
+.pay-confirm-btn {
+  flex: 1; padding: 12px;
+  background: #e85d04; color: white;
+  font-size: 14px; font-weight: 700;
+  border-radius: 10px; transition: background 0.2s;
+}
+.pay-confirm-btn:hover:not(:disabled) { background: #c44d00; }
+.pay-confirm-btn:disabled { opacity: 0.6; }
+.btn-cancel {
+  padding: 12px 18px; background: #f5f6fa;
+  color: #718096; border-radius: 10px;
+  font-size: 14px; font-weight: 600;
+}
+.btn-cancel:hover { background: #e2e8f0; }
+
+.order-total-row { font-weight: 700; border-top: 2px solid #e2e8f0 !important; margin-top: 4px; }
+
+/* Trạng thái bếp chi tiết */
+.order-real-status {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: #718096;
+  background: #f7f8fa; padding: 6px 10px;
+  border-radius: 6px; margin-bottom: 10px;
+}
+.order-real-status-label { font-weight: 600; }
+.order-real-status-value { color: #4a5568; }

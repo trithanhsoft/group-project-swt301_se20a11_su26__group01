@@ -5,6 +5,7 @@ import { CartProvider } from './context/CartContext';
 import { ProfileProvider } from './context/ProfileContext';
 import { FeedbackProvider } from './context/FeedbackContext';
 import PrivateRoute from './components/PrivateRoute';
+import PublicRoute from './components/PublicRoute';
 
 // Layouts
 import AdminLayout from './layouts/AdminLayout';
@@ -12,10 +13,13 @@ import StaffLayout from './layouts/StaffLayout';
 import KitchenLayout from './layouts/KitchenLayout';
 import CustomerLayout from './layouts/CustomerLayout';
 
+// Landing
+import Landing from './pages/Landing';
+
 // Auth
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
+import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx';
+import ForgotPassword from './pages/ForgotPassword.jsx';
 
 // Admin pages
 import Dashboard from './pages/Dashboard';
@@ -36,14 +40,17 @@ import Reservation from './pages/customer/Reservation';
 import CustomerOrders from './pages/customer/CustomerOrders';
 import Profile from './pages/customer/Profile';
 import Feedback from './pages/customer/Feedback';
+import TableMenu from './pages/customer/TableMenu';
 
 // Staff pages
 import StaffTables from './pages/staff/StaffTables';
 import StaffOrders from './pages/staff/StaffOrders';
 import StaffReservations from './pages/staff/StaffReservations';
 import StaffCustomers from './pages/staff/StaffCustomers';
+import TableQRCode from './pages/staff/TableQRCode';
+import StaffPayments from './pages/staff/StaffPayments';
 
-import AIAnalytics from './pages/AIAnalytics';
+// Kitchen pages
 import KitchenQueue from './pages/kitchen/KitchenQueue';
 import KitchenHistory from './pages/kitchen/KitchenHistory';
 
@@ -52,60 +59,118 @@ function App() {
     <AuthProvider>
       <CartProvider>
         <ProfileProvider>
-        <FeedbackProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login"          element={<Login />} />
-            <Route path="/register"       element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
+          <FeedbackProvider>
+            <BrowserRouter>
+              <Routes>
+                {/* Public QR Table Ordering Route */}
+                <Route path="/table/:tableId/menu" element={<TableMenu />} />
+                {/* Landing - public */}
+                <Route path="/" element={<Landing />} />
+                {/* Public Auth Routes */}
+                <Route
+                  path="/login"
+                  element={
+                    <PublicRoute>
+                      <Login />
+                    </PublicRoute>
+                  }
+                />
 
-            {/* Admin */}
-            <Route path="/" element={<PrivateRoute roles={['admin']}><AdminLayout /></PrivateRoute>}>
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="tables"    element={<Tables />} />
-              <Route path="menu"      element={<Menu />} />
-              <Route path="orders"    element={<Orders />} />
-              <Route path="staff"     element={<Staff />} />
-              <Route path="reports"   element={<Reports />} />
-              <Route path="accounts"      element={<AdminAccounts />} />
-              <Route path="vouchers"      element={<AdminVouchers />} />
-              <Route path="feedback"      element={<AdminFeedback />} />
-              <Route path="reservations"  element={<AdminReservations />} />
-              {/* <Route path="ai" element={<AIAnalytics />} /> */}
-            </Route>
+                <Route
+                  path="/register"
+                  element={
+                    <PublicRoute>
+                      <Register />
+                    </PublicRoute>
+                  }
+                />
 
-            {/* Staff */}
-            <Route path="/staff" element={<PrivateRoute roles={['staff']}><StaffLayout /></PrivateRoute>}>
-              <Route index element={<Navigate to="/staff/tables" replace />} />
-              <Route path="tables"       element={<StaffTables />} />
-              <Route path="reservations" element={<StaffReservations />} />
-              <Route path="orders"       element={<StaffOrders />} />
-              <Route path="customers"    element={<StaffCustomers />} />
-            </Route>
+                <Route
+                  path="/forgot-password"
+                  element={
+                    <PublicRoute>
+                      <ForgotPassword />
+                    </PublicRoute>
+                  }
+                />
 
-            {/* Kitchen */}
-            <Route path="/kitchen" element={<PrivateRoute roles={['kitchen']}><KitchenLayout /></PrivateRoute>}>
-              <Route index element={<Navigate to="/kitchen/queue" replace />} />
-              <Route path="queue"   element={<KitchenQueue />} />
-              <Route path="history" element={<KitchenHistory />} />
-            </Route>
+                {/* Admin */}
+                <Route
+                  path="/admin"
+                  element={
+                    <PrivateRoute roles={['admin']}>
+                      <AdminLayout />
+                    </PrivateRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="tables" element={<Tables />} />
+                  <Route path="table-qr" element={<TableQRCode />} />
+                  <Route path="menu" element={<Menu />} />
+                  <Route path="orders" element={<Orders />} />
+                  <Route path="staff" element={<Staff />} />
+                  <Route path="reports" element={<Reports />} />
+                  <Route path="accounts" element={<AdminAccounts />} />
+                  <Route path="vouchers" element={<AdminVouchers />} />
+                  <Route path="feedback" element={<AdminFeedback />} />
+                  <Route path="reservations" element={<AdminReservations />} />
+                </Route>
 
-            {/* Customer */}
-            <Route path="/customer" element={<PrivateRoute roles={['customer']}><CustomerLayout /></PrivateRoute>}>
-              <Route index element={<Navigate to="/customer/menu" replace />} />
-              <Route path="menu"        element={<CustomerMenu />} />
-              <Route path="cart"        element={<Cart />} />
-              <Route path="reservation" element={<Reservation />} />
-              <Route path="orders"      element={<CustomerOrders />} />
-              <Route path="profile"     element={<Profile />} />
-              <Route path="feedback"    element={<Feedback />} />
-            </Route>
+                {/* Staff */}
+                <Route
+                  path="/staff"
+                  element={
+                    <PrivateRoute roles={['staff']}>
+                      <StaffLayout />
+                    </PrivateRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/staff/tables" replace />} />
+                  <Route path="tables" element={<StaffTables />} />
+                  <Route path="reservations" element={<StaffReservations />} />
+                  <Route path="orders" element={<StaffOrders />} />
+                  <Route path="customers" element={<StaffCustomers />} />
+                  <Route path="table-qr" element={<TableQRCode />} />
+                  <Route path="payments" element={<StaffPayments />} />
+                </Route>
 
-            <Route path="*" element={<Navigate to="/login" replace />} />
-          </Routes>
-        </BrowserRouter>
-        </FeedbackProvider>
+                {/* Kitchen */}
+                <Route
+                  path="/kitchen"
+                  element={
+                    <PrivateRoute roles={['kitchen']}>
+                      <KitchenLayout />
+                    </PrivateRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/kitchen/queue" replace />} />
+                  <Route path="queue" element={<KitchenQueue />} />
+                  <Route path="history" element={<KitchenHistory />} />
+                </Route>
+
+                {/* Customer */}
+                <Route
+                  path="/customer"
+                  element={
+                    <PrivateRoute roles={['customer']}>
+                      <CustomerLayout />
+                    </PrivateRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/customer/menu" replace />} />
+                  <Route path="menu" element={<CustomerMenu />} />
+                  <Route path="cart" element={<Cart />} />
+                  <Route path="reservation" element={<Reservation />} />
+                  <Route path="orders" element={<CustomerOrders />} />
+                  <Route path="profile" element={<Profile />} />
+                  <Route path="feedback" element={<Feedback />} />
+                </Route>
+
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </BrowserRouter>
+          </FeedbackProvider>
         </ProfileProvider>
       </CartProvider>
     </AuthProvider>
